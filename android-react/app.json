@@ -1,0 +1,5 @@
+{
+  "name": "LastOut",
+  "displayName": "Last Out",
+  "android": { "package": "app.lastout.s51" }
+}
