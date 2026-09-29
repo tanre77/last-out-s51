@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Last Out" />
+  <meta name="theme-color" content="#0B1F17" />
+  <meta property="og:title" content="Last Out · Survivor 51" />
+  <meta property="og:description" content="Draft who lasts after Aaliyah. Demo: tanner@lastout.app / torch123" />
+  <title>Last Out</title>
+  <style>
+    :root { --bg:#07140f; --card:#12281f; --line:#1e3d30; --gold:#e8c547; --sand:#f4e7c5; --mute:#8aa396; }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--sand);font-family:-apple-system,sans-serif;padding:16px 16px 90px}
+    .screen{display:none;max-width:560px;margin:0 auto}.screen.on{display:block}
+    .kicker{color:var(--gold);letter-spacing:.14em;font-size:11px;font-weight:700;text-transform:uppercase}
+    h1{font-size:28px;margin:6px 0 8px} .mute{color:var(--mute);font-size:13px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}
+    .btn{width:100%;border:0;background:var(--gold);color:#111;font-weight:800;border-radius:12px;padding:14px;margin-top:8px}
+    input{width:100%;background:var(--card);border:1px solid var(--line);color:var(--sand);border-radius:12px;padding:12px;margin:6px 0}
+    .nav{position:fixed;left:0;right:0;bottom:0;background:#081610;display:none;justify-content:space-around;padding:8px 4px 16px}
+    .nav.on{display:flex} .nav button{background:0;border:0;color:var(--mute);font-weight:700;font-size:11px}
+    .nav button.on{color:var(--gold)} .pts{color:var(--gold);font-weight:800}
+    .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+    .bubble{background:var(--card);border-radius:12px;padding:10px;margin:8px 0}
+  </style>
+</head>
+<body>
+<section id="login" class="screen on">
+  <p class="kicker">Survivor 51</p>
+  <h1>Last Out</h1>
+  <p class="mute">Aaliyah Puglia is out. Draft who lasts. Send this link in iMessage.</p>
+  <div class="card"><b>Demo login</b><div class="mute">tanner@lastout.app / torch123</div></div>
+  <input id="email" value="tanner@lastout.app" />
+  <input id="password" type="password" value="torch123" />
+  <input id="display" placeholder="Your name" />
+  <button class="btn" onclick="login()">Enter the island</button>
+</section>
+<section id="island" class="screen">
+  <p class="kicker">After the first boot</p>
+  <h1>Who lasts?</h1>
+  <div class="card">Toka lost Ep 1. Rob found an idol. Next: Weaponized Honesty.</div>
+  <div id="leaders"></div>
+</section>
+<section id="cast" class="screen"><p class="kicker">Remaining 20</p><h1>The contents</h1><div id="castList"></div></section>
+<section id="roster" class="screen"><p class="kicker">Club</p><h1>Squad</h1><div id="squad"></div><div id="inbox"></div></section>
+<section id="table" class="screen"><p class="kicker">EPL rules</p><h1>Table</h1><div id="stand"></div></section>
+<section id="chat" class="screen"><p class="kicker">League</p><h1>Chat</h1><div id="msgs"></div>
+  <input id="chatText" placeholder="Talk strategy" onkeydown="if(event.key==='Enter')send()" />
+  <button class="btn" onclick="send()">Send</button>
+</section>
+<nav class="nav" id="nav">
+  <button data-s="island" onclick="go('island')">Island</button>
+  <button data-s="cast" onclick="go('cast')">Cast</button>
+  <button data-s="roster" onclick="go('roster')">Roster</button>
+  <button data-s="table" onclick="go('table')">Table</button>
+  <button data-s="chat" onclick="go('chat')">Chat</button>
+</nav>
+<script>
+const C=[
+ {id:"rob",n:"Rob Antonson",t:"Savu",p:26,f:"Found a no-strings idol."},
+ {id:"jenna",n:"Jenna Doore",t:"Toka",p:5,f:"2 votes + Shot in the Dark. Survived."},
+ {id:"alexis",n:"Alexis Levine",t:"Savu",p:11,f:"Savu immunity."},
+ {id:"ana",n:"Ana Sani",t:"Savu",p:11,f:"Voice actress."},
+ {id:"brady",n:"Brady Booker",t:"Toka",p:8,f:"Voted Aaliyah."},
+ {id:"carter",n:"Carter Krull",t:"Savu",p:11,f:"Safe on Savu."},
+ {id:"cristian",n:"Cristian Chavez",t:"Savu",p:11,f:"S47 alternate."},
+ {id:"kilby",n:"Danny Kilby",t:"Toka",p:8,f:"Voted Aaliyah."},
+ {id:"devin",n:"Devin Way",t:"Toka",p:8,f:"Voted Jenna."},
+ {id:"eric",n:"Eric Macksoud",t:"Savu",p:11,f:"Safe on Savu."},
+ {id:"jelly",n:"Jelly Loblack",t:"Toka",p:8,f:"Minority vote."},
+ {id:"kristin",n:"Kristin Flickinger",t:"Savu",p:11,f:"Oldest player."},
+ {id:"lewis",n:"Lewis Kelly",t:"Toka",p:8,f:"Exile. Failed idol chop."},
+ {id:"linnea",n:"Linnea Capobianco",t:"Savu",p:11,f:"Safe on Savu."},
+ {id:"maggie",n:"Maggie Nestor",t:"Toka",p:8,f:"Voted Aaliyah."},
+ {id:"mike",n:"Mike Pinsky",t:"Toka",p:8,f:"Yankees ops."},
+ {id:"ori",n:"Ori Jean-Charles",t:"Savu",p:11,f:"Savu immunity."},
+ {id:"patt",n:"Patt Cannaday",t:"Toka",p:8,f:"Aligned with Jenna."},
+ {id:"sharonda",n:"Sharonda Cox",t:"Savu",p:11,f:"Close with Kristin."},
+ {id:"thienan",n:"Thien An Nguyen",t:"Toka",p:8,f:"Voted Aaliyah."}
+];
+const M=[{id:"you",n:"You"},{id:"probst",n:"Come On In"},{id:"buffalo",n:"Buffalo Ridge"},{id:"cirie",n:"Cirie's Couch"},{id:"fire",n:"Firemaking FC"},{id:"idol",n:"Idol Hunters"},{id:"outwit",n:"Outwit United"},{id:"snuff",n:"Snuffed Torches"}];
+const R={you:["rob","brady","jenna"],probst:["kristin","devin","thienan"],buffalo:["patt","linnea"],cirie:["jelly","carter"],fire:["lewis","alexis"],idol:["kilby","sharonda"],outwit:["ana","mike","ori"],snuff:["cristian","maggie","eric"]};
+const by=Object.fromEntries(C.map(x=>[x.id,x]));
+const score=id=>(R[id]||[]).reduce((n,p)=>n+(by[p]?by[p].p:0),0);
+let user=null;
+const chat=[
+ {u:"Come On In",t:"Torch snuffed on Aaliyah. Who lasts?"},
+ {u:"You",t:"Does anybody who has Thein A willing to make a trade? I'll give you my third pick this season and 2nd overall pick for next season"}
+];
+function go(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id));
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("on",b.dataset.s===id));
+  if(id==="island") document.getElementById("leaders").innerHTML=C.slice().sort((a,b)=>b.p-a.p).slice(0,5).map(c=>`<div class="row"><span>${c.n}</span><span class="pts">${c.p}</span></div>`).join("");
+  if(id==="cast") document.getElementById("castList").innerHTML=C.map(c=>`<div class="row"><div><b>${c.n}</b> · ${c.t}<div class="mute">${c.f}</div></div><span class="pts">${c.p}</span></div>`).join("");
+  if(id==="roster"){
+    document.getElementById("squad").innerHTML=(R.you||[]).map(id=>`<div class="row"><span>${by[id].n}</span><span class="pts">${by[id].p}</span></div>`).join("");
+    document.getElementById("inbox").innerHTML=`<div class="card"><b>Come On In wants Jenna for Thien An</b><div class="mute">Open trade. Your shout is live in chat.</div></div>`;
+  }
+  if(id==="table"){
+    const rows=M.map(m=>({...m,pts:0,gf:score(m.id)}));
+    [["you","probst"],["buffalo","cirie"],["fire","idol"],["outwit","snuff"]].forEach(([a,b])=>{
+      const A=rows.find(r=>r.id===a),B=rows.find(r=>r.id===b);
+      if(A.gf>B.gf)A.pts+=3; else if(B.gf>A.gf)B.pts+=3; else{A.pts++;B.pts++;}
+    });
+    rows.sort((a,b)=>b.pts-a.pts||b.gf-a.gf);
+    document.getElementById("stand").innerHTML=rows.map((r,i)=>`<div class="row"><span>${i+1}. ${r.n}</span><span class="pts">${r.pts}</span></div>`).join("");
+  }
+  if(id==="chat") document.getElementById("msgs").innerHTML=chat.map(m=>`<div class="bubble"><b class="pts">${m.u}</b><div>${m.t}</div></div>`).join("");
+}
+function login(){
+  user=document.getElementById("display").value.trim()||"You";
+  if(user!=="You") M[0].n=user;
+  document.getElementById("nav").classList.add("on");
+  go("island");
+}
+function send(){
+  const el=document.getElementById("chatText");
+  if(!el.value.trim())return;
+  chat.push({u:user||"You",t:el.value.trim()});
+  el.value="";
+  go("chat");
+}
+</script>
+</body>
+</html>
