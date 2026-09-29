@@ -1,26 +1,20 @@
-import React, { useEffect, useMemo, useState, createContext, useContext } from "react";
+import React, { useEffect, useState, createContext, useContext } from "react";
 import {
-  ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, Pressable,
-  SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, View,
+  ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable,
+  SafeAreaView, ScrollView, StatusBar, Text, TextInput, View,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer, DarkTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { CASTAWAYS, SCORING, SEASON, scoreCastaway } from "./src/data/castaways";
-import {
-  MANAGERS, MATCHWEEKS, ROSTERS, SEED_CHAT, SEED_TRADES,
-  fixtureResult, rosterScore, table as buildTable,
-} from "./src/data/league";
+import { ROSTERS, SEED_CHAT, SEED_TRADES } from "./src/data/league";
+import { makeScreens, s, C } from "./src/ui";
 
 const Auth = createContext(null);
 const Game = createContext(null);
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
-const C = { bg: "#0B1F17", card: "#12281F", line: "#1E3D30", gold: "#E8C547", sand: "#F4E7C5", mute: "#8AA396" };
-
-const initials = (n) => n.split(" ").filter((p) => p !== "An").slice(0, 2).map((p) => p[0]).join("").toUpperCase();
-const mgr = (id) => MANAGERS.find((m) => m.id === id)?.name || id;
+const { Home, CastList, Detail, Roster, Table, Chat } = makeScreens(Auth, Game);
 
 export default function App() {
   const [boot, setBoot] = useState(true);
@@ -68,7 +62,14 @@ export default function App() {
     setTrades(next); await AsyncStorage.setItem("lastout.trades", JSON.stringify(next));
   };
 
-  if (boot) return <View style={[s.center, { backgroundColor: C.bg }]}><ActivityIndicator color={C.gold} /><Text style={s.mute}>Lighting torches…</Text></View>;
+  if (boot) {
+    return (
+      <View style={{ flex: 1, backgroundColor: C.bg, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator color={C.gold} />
+        <Text style={s.mute}>Lighting torches...</Text>
+      </View>
+    );
+  }
 
   return (
     <Auth.Provider value={{ user, login, logout }}>
@@ -92,7 +93,13 @@ function AuthStack() {
 }
 
 function Tabs() {
-  const opt = { headerStyle: { backgroundColor: C.bg }, headerTintColor: C.sand, tabBarStyle: { backgroundColor: "#081610", borderTopColor: C.line }, tabBarActiveTintColor: C.gold, tabBarInactiveTintColor: C.mute };
+  const opt = {
+    headerStyle: { backgroundColor: C.bg },
+    headerTintColor: C.sand,
+    tabBarStyle: { backgroundColor: "#081610", borderTopColor: C.line },
+    tabBarActiveTintColor: C.gold,
+    tabBarInactiveTintColor: C.mute,
+  };
   return (
     <Tab.Navigator screenOptions={opt}>
       <Tab.Screen name="Island" component={Home} />
@@ -120,15 +127,14 @@ function Login({ navigation }) {
   return (
     <SafeAreaView style={s.safe}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={s.auth}>
+        <ScrollView contentContainerStyle={{ padding: 24, flexGrow: 1, justifyContent: "center" }}>
           <Text style={s.kicker}>SURVIVOR 51 · OPEN ERA</Text>
           <Text style={s.h1}>Last Out</Text>
           <Text style={s.sub}>Aaliyah Puglia is gone. Draft who lasts. Score idols. Trade picks. Beat the table.</Text>
           <TextInput style={s.input} placeholder="Email" placeholderTextColor={C.mute} autoCapitalize="none" value={email} onChangeText={setEmail} />
           <TextInput style={s.input} placeholder="Password" placeholderTextColor={C.mute} secureTextEntry value={password} onChangeText={setPassword} />
           <Pressable style={s.btn} onPress={() => login(email, password)}><Text style={s.btnText}>Enter the island</Text></Pressable>
-          <Pressable onPress={() => navigation.navigate("Register")}><Text style={s.link}>Need a tribe? Create an account</Text></Pressable>
-          <Text style={s.fine}>iOS + Android via Expo. Demo login is prefilled.</Text>
+          <Pressable onPress={() => navigation.navigate("Register")}><Text style={{ color: C.gold, textAlign: "center", marginTop: 16 }}>Need a tribe? Create an account</Text></Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -137,16 +143,18 @@ function Login({ navigation }) {
 
 function Register({ navigation }) {
   const { login } = useContext(Auth);
-  const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   return (
     <SafeAreaView style={s.safe}>
-      <View style={s.auth}>
+      <View style={{ padding: 24, flex: 1, justifyContent: "center" }}>
         <Text style={s.h1}>Join Last Out</Text>
         <TextInput style={s.input} placeholder="Display name" placeholderTextColor={C.mute} value={name} onChangeText={setName} />
         <TextInput style={s.input} placeholder="Email" placeholderTextColor={C.mute} autoCapitalize="none" value={email} onChangeText={setEmail} />
         <TextInput style={s.input} placeholder="Password" placeholderTextColor={C.mute} secureTextEntry value={password} onChangeText={setPassword} />
         <Pressable style={s.btn} onPress={() => login(email, password, name)}><Text style={s.btnText}>Create account</Text></Pressable>
-        <Pressable onPress={() => navigation.goBack()}><Text style={s.link}>Already have a torch? Sign in</Text></Pressable>
+        <Pressable onPress={() => navigation.goBack()}><Text style={{ color: C.gold, textAlign: "center", marginTop: 16 }}>Already have a torch? Sign in</Text></Pressable>
       </View>
     </SafeAreaView>
   );
