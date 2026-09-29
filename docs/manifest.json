@@ -1,0 +1,8 @@
+{
+  "name": "Last Out",
+  "short_name": "Last Out",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0B1F17",
+  "theme_color": "#0B1F17"
+}
