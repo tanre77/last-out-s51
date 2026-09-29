@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Last Out S51",
+    "slug": "last-out-s51",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0B1F17"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.lastout.s51"
+    },
+    "android": {
+      "package": "app.lastout.s51",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B1F17"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
